@@ -6,20 +6,31 @@ import matplotlib.pyplot as plt
 class Cashflow(object):
     """Cashflow
     Create a cashflow-class definition.
-    
-    Attributes: 
+
+    Attributes:
         * amount - monetary amount at time t.
-        * t - integer representing time. 
-        
+        * t - integer representing time.
+
     Methods:
         * present_value(self, interest_rate) - returns the present value of the cashfow given a interest-rate.
     """
+
+    def _init_(self, amount, t):
+        self.amount = amount
+        self.t = t
+
+    def value_at(self, t, interest_rate):
+        delta_t = t - self.t
+        return self.amount * (1 + interest_rate) ** delta_t
+
+    def present_value(self, interest_rate):
+        return self.value_at(t=0, interest_rate=interest_rate)
 
 
 class InvestmentProject(object):
     RISK_FREE_RATE = 0.08
 
-    def __init__(self, cashflows, hurdle_rate=RISK_FREE_RATE):
+    def _init_(self, cashflows, hurdle_rate=RISK_FREE_RATE):
         cashflows_positions = {str(flow.t): flow for flow in cashflows}
         self.cashflow_max_position = max((flow.t for flow in cashflows))
         self.cashflows = []
@@ -36,14 +47,27 @@ class InvestmentProject(object):
     def internal_return_rate(self):
         return np.irr([flow.amount for flow in self.cashflows])
 
-    def plot(self, show=False):
+    def plot(filepath, show=True):
         """Plot Cashflows
         The `plot` function creates a bar plot (fig) where x=t and y=amount.
         :param show: boolean that represents whether to run `plt.show()` or not.
         :return: matplotlib figure object.
         """
         # TODO: implement plot method
-        raise NotImplementedError
+
+        data = pd.read_csv(filepath)
+        plot = data.plot.bar(x="t", y="amount")
+        fig = plot.get_figure()
+        plt.show()
+        return fig
+
+        # """Plot Cashflows
+        # The `plot` function creates a bar plot (fig) where x=t and y=amount.
+        #:param show: boolean that represents whether to run `plt.show()` or not.
+        #:return: matplotlib figure object.
+        # """
+
+        # TODO: implement plot method
 
 
     def net_present_value(self, interest_rate=None):
@@ -62,6 +86,8 @@ class InvestmentProject(object):
         :return: a number (currency) representing the equivalent annuity.
         """
         # TODO: implement equivalent_annuity methdo
+
+        return self.interest_rate * self.amount / (1 - (1 + self.interest_rate) ** (-self.n))
         raise NotImplementedError
 
     def describe(self):
